@@ -3,37 +3,44 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import chardet
-
-
-proxy_dict = {
-    "http":"http://ctwc0162:a6Mj7Wh6K@proxy.doshisha.ac.jp:8080/",
-    "https":"https://ctwc0162:a6Mj7Wh6K@proxy.doshisha.ac.jp:8080/"
-}
+from selenium.webdriver.chrome.options import Options
+from selenium import webdriver
 
 
 def access_url(_url, _depth):
     if _depth > 3:
         return
 
-    print('accessed: '+_url)
-    html = requests.get(_url, proxies=proxy_dict).content
+    driver.get(_url)
+    visited_sites.append(_url)
 
-    soup = BeautifulSoup(html, 'html.parser')
-    divs = soup.find_all('div', text=re.compile('。$'))
-    for div in divs:
-        print(div.get_text())
+    result = driver.find_element_by_tag_name('div').text
+    with open('web_page_texts', 'a') as output:
+        output.writelines(result)
+
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    links = [link.get('href') for link in soup.find_all('a', href=re.compile('html$'))]
+    print(links)
+    print('by: '+_url)
 
     # todo: テキストの抽出,保存
     # todo: 見つかった<link>だけのstackを用意
-    # todo: stack.pop()してaccessed_urlsに存在しなければ.top()のurlをaccessed_urlsに追加，access_url(_url, _depth+1)
+    # todo: stack.pop()してvisited_urlsに存在しなければ.top()のurlをaccessed_urlsに追加，
+    # access_url(_url, _depth+1)
 
+
+driver = webdriver.Chrome()
 
 # アクセス予定のルートurlスタック
 root_links = open('root_links', 'r')
 url_stack = list(set(root_links.readlines()))
+visited_sites = []
 
-accessed_urls = []
+access_url('http://www.doshisha.ac.jp/information/campus/access/shinmachi.html',1)
+
 for i in range(len(url_stack)):
     url = url_stack[-1]
     url_stack.pop()
     access_url(url, 1)
+
+driver.close()
