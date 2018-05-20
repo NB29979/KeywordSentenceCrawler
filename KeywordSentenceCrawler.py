@@ -8,6 +8,8 @@ from selenium import webdriver
 def access_url(_url, _depth):
     if _depth > 3:
         return
+    if _url in visited_sites:
+        return
 
     driver.get(_url)
     visited_sites.append(_url)
@@ -20,6 +22,11 @@ def access_url(_url, _depth):
     # リンクを探して踏む
     soup = BeautifulSoup(driver.page_source, 'html.parser')
     links = [link.get('href') for link in soup.find_all('a', href=re.compile('html$'))]
+
+    for link in links:
+        if link[0] == '/':
+            print('part: '+link)
+
     print(links)
     print('by: '+_url)
 
