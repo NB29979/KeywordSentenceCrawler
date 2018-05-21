@@ -21,19 +21,24 @@ def access_url(_url, _depth):
 
     # リンクを探して踏む
     soup = BeautifulSoup(driver.page_source, 'html.parser')
-    links = [link.get('href') for link in soup.find_all('a', href=re.compile(r'.*/+.'))]#, href=re.compile('html$'))]
-    domain = re.search(r'http(.+)((.jp)|(.be))', _url)
-    urls_root = []
+    links = [link.get('href') for link in soup.find_all('a', href=re.compile(r'.*/+.'))]
+    links_ = [link for link in links if not re.match(r'pdf$', link)]
+    domain = re.search(r'http(.+)((.jp)|(na.be))', _url)
+    links_in_site = []
 
-    for link in links:
+    for link in links_:
         if link and link[0] == '/' or '..' in link:
-            urls_root.append(domain.group(0)+link)
+            links_in_site.append(domain.group(0)+link)
 
-    print('by: '+_url)
+    for i in range(len(links_in_site)):
+        link = links_in_site[-1]
+        links_in_site.pop()
+        try:
+            access_url(link, _depth+1)
+        except:
+            continue
 
-    # todo: 見つかった<link>だけのstackを用意
-    # todo: stack.pop()してvisited_urlsに存在しなければ.top()のurlをaccessed_urlsに追加，
-    # access_url(_url, _depth+1)
+    print(_url)
 
 
 driver = webdriver.Chrome()
@@ -45,6 +50,7 @@ visited_sites = []
 
 for i in range(len(url_stack)):
     url = url_stack[-1]
+    print('root:'+url)
     url_stack.pop()
     access_url(url, 1)
 
