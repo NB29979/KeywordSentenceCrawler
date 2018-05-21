@@ -21,13 +21,14 @@ def access_url(_url, _depth):
 
     # リンクを探して踏む
     soup = BeautifulSoup(driver.page_source, 'html.parser')
-    links = [link.get('href') for link in soup.find_all('a', href=re.compile('html$'))]
+    links = [link.get('href') for link in soup.find_all('a', href=re.compile(r'.*/+.'))]#, href=re.compile('html$'))]
+    domain = re.search(r'http(.+)((.jp)|(.be))', _url)
+    urls_root = []
 
     for link in links:
-        if link[0] == '/':
-            print('part: '+link)
+        if link and link[0] == '/' or '..' in link:
+            urls_root.append(domain.group(0)+link)
 
-    print(links)
     print('by: '+_url)
 
     # todo: 見つかった<link>だけのstackを用意
