@@ -15,15 +15,17 @@ def access_url(_url, _depth):
     visited_sites.append(_url)
 
     # webページのテキストの抽出とファイル出力
-    result = driver.find_element_by_tag_name('div').text
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    for s in soup(['script', 'style']):
+        s.decompose()
+    result = '\n'.join(soup.stripped_strings)
     with codecs.open('web_page_texts', 'a', 'cp932', 'ignore') as output:
         output.writelines(result)
 
     # リンクを探して踏む
-    soup = BeautifulSoup(driver.page_source, 'html.parser')
     links = [link.get('href') for link in soup.find_all('a', href=re.compile(r'.*/+.'))]
     links_ = [link for link in links if not re.match(r'pdf$', link)]
-    domain = re.search(r'http(.+)((.jp)|(na.be))', _url)
+    domain = re.search(r'http(.+)((.jp)|(na.be)|(.net)|(.com)|(.info))', _url)
     links_in_site = []
 
     for link in links_:
