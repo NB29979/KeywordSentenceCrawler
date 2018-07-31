@@ -12,7 +12,8 @@ def access_url(_url, _depth):
         return
 
     driver.get(_url)
-    visited_sites.append(_url)
+    if _url not in root_links:
+        visited_sites.append(_url)
 
     # webページのテキストの抽出とファイル出力
     soup = BeautifulSoup(driver.page_source, 'html.parser')
